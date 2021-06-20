@@ -74,7 +74,7 @@
             message: '登陆成功',
             type: 'success'
           });
-          window.sessionStorage.setItem('token',res.data.token)
+          window.sessionStorage.setItem('token',res.data.data.token)
           this.$router.push('/home')
         })
       }

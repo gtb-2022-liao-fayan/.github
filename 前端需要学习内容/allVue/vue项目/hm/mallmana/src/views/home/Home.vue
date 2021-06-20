@@ -10,61 +10,40 @@
         <el-button type="info" @click="exit">退出</el-button>
       </el-header>
       <el-container>
-        <el-aside width="200px">
+        <el-aside :width="isCollapse ? '64px' : '200px'">
+          <div class="toggle-button" @click="toggleClick">|||</div>
           <el-menu
                   class="el-menu-vertical-demo"
                   background-color="#333744"
                   text-color="#fff"
-                  active-text-color="#ffd04b">
-            <el-submenu index="1">
+                  active-text-color="#409EFF"
+                  unique-opened
+                  :collapse="isCollapse"
+                  :collapse-transition="false"
+                  :router="true" :default-active="activePath">
+            <el-submenu :index="item.id + ''"
+                        v-for="item in menuList"
+                        :key="item.id">
               <template slot="title">
                 <i class="el-icon-location"></i>
-                <span>用户管理</span>
+                <span>{{item.authName}}</span>
               </template>
+              <el-menu-item  :index=" '/' + subItem.path"
+                          v-for="subItem in item.children"
+                          :key="subItem.id"
+                          @click="saveNavState('/' + subItem.path)">
+                    <template slot="title">
+                      <i class="el-icon-menu"></i>
+                      <span>{{subItem.authName}}</span>
+                    </template>
+              </el-menu-item >
             </el-submenu>
 
-            <el-submenu index="2">
-              <template slot="title">
-                <i class="el-icon-location"></i>
-                <span>权限管理</span>
-              </template>
-              <el-submenu index="2-1">
-                <template slot="title">
-                  <i class="el-icon-location"></i>
-                  <span>角色列表</span>
-                </template>
-              </el-submenu>
-              <el-submenu index="2-2">
-                <template slot="title">
-                  <i class="el-icon-location"></i>
-                  <span>权限列表</span>
-                </template>
-              </el-submenu>
-            </el-submenu>
-
-            <el-submenu index="3">
-              <template slot="title">
-                <i class="el-icon-location"></i>
-                <span>商品管理</span>
-              </template>
-            </el-submenu>
-
-            <el-submenu index=4>
-              <template slot="title">
-                <i class="el-icon-location"></i>
-                <span>订单管理</span>
-              </template>
-            </el-submenu>
-
-            <el-submenu index=5>
-              <template slot="title">
-                <i class="el-icon-location"></i>
-                <span>数据统计</span>
-              </template>
-            </el-submenu>
           </el-menu>
         </el-aside>
-        <el-main>Main</el-main>
+        <el-main>
+          <router-view></router-view>
+        </el-main>
       </el-container>
     </el-container>
   </div>
@@ -75,8 +54,16 @@
 
   export default {
     name: "Home",
+    data() {
+      return {
+        menuList: [],
+        isCollapse: false,
+        activePath: ''
+      }
+    },
     created() {
-      this.getAsideMenu()
+      this.getAsideMenu();
+      this.activePath = window.sessionStorage.getItem('activePath')
     },
     methods: {
       exit(){
@@ -85,8 +72,19 @@
       },
       getAsideMenu(){
         getAsideMenu().then( res => {
-          console.log(res);
+          // console.log(res);
+          if(res.data.meta.status !== 200){
+            return this.$message.error(res.data.meta.msg)
+          }
+          this.menuList = res.data.data
         })
+      },
+      toggleClick(){
+        this.isCollapse = !this.isCollapse
+      },
+      saveNavState(activePath){
+        window.sessionStorage.setItem('activePath',activePath)
+        this.activePath = activePath
       }
     }
   }
@@ -114,6 +112,9 @@
   .el-aside{
     background-color: #333744;
   }
+  .el-aside > .el-menu{
+    border-right: none;
+  }
   .el-main{
     background-color: #EAEDF1;
   }
@@ -122,5 +123,14 @@
   }
   .homeContainer{
     height: 100%;
+  }
+  .toggle-button{
+    background-color: #4A5064;
+    font-size: 10px;
+    line-height: 24px;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 0.2em;
+    cursor: pointer;
   }
 </style>
